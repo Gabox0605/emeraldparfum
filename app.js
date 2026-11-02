@@ -17,10 +17,11 @@
  *   5. Utilidades
  *   6. Renderizado del catálogo público
  *   7. Filtros y búsqueda
- *   8. Carrusel de ocasiones (hero)
- *   9. Panel de administración
- *  10. Eventos globales
- *  11. Arranque
+ *   8. Modal de reseña (vista ampliada)
+ *   9. Carrusel de marca y ocasiones (hero)
+ *  10. Panel de administración
+ *  11. Eventos globales
+ *  12. Arranque
  * ============================================================================
  */
 
@@ -65,7 +66,8 @@ const ALL_BRANDS = 'all';
    Misma forma que tendrá la tabla `products` en Supabase. Los estuches no
    tienen volumen único: `volume_ml` queda en 0 y la tarjeta muestra
    "Set de regalo". Las marcas coinciden exactamente con los chips de
-   "Marcas destacadas" (index.html) para que el filtro siempre devuelva algo. */
+   "Marcas destacadas" (index.html) para que el filtro siempre devuelva algo.
+   `notes` y `description` alimentan el modal de reseña. */
 const mockProducts = [
   {
     id: 'p-001',
@@ -77,6 +79,14 @@ const mockProducts = [
     image_url:
       'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=700&q=75',
     is_available: true,
+    notes: {
+      salida: 'Pimienta rosa, mandarina y lichi.',
+      corazon: 'Rosa de Damasco, peonía y jazmín.',
+      fondo: 'Ámbar, almizcle blanco y madera de cedro.',
+    },
+    description:
+      'Un ramo de rosas frescas que se vuelve cálido al caer la noche. ' +
+      'Femenina, envolvente y elegante: perfecta para cenas y ocasiones especiales.',
   },
   {
     id: 'p-002',
@@ -88,6 +98,14 @@ const mockProducts = [
     image_url:
       'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=700&q=75',
     is_available: true,
+    notes: {
+      salida: 'Bergamota, pomelo y hojas de laurel.',
+      corazon: 'Cedro, salvia y nuez moscada.',
+      fondo: 'Vetiver, ámbar y cuero.',
+    },
+    description:
+      'Amaderado seco y seguro, con un fondo de cuero que deja una estela ' +
+      'sobria. Pensada para jornadas largas y reuniones donde la presencia importa.',
   },
   {
     id: 'p-003',
@@ -99,6 +117,14 @@ const mockProducts = [
     image_url:
       'https://images.unsplash.com/photo-1587017539504-67cfbddac569?auto=format&fit=crop&w=700&q=75',
     is_available: false,
+    notes: {
+      salida: 'Vainilla de Madagascar y pera madura.',
+      corazon: 'Flor de tiaré y heliotropo.',
+      fondo: 'Almizcle, sándalo y praliné.',
+    },
+    description:
+      'Dulce sin empalagar: una vainilla luminosa con fondo cremoso que ' +
+      'invita a quedarse. Ideal para el día a día y para regalar.',
   },
   {
     id: 'p-004',
@@ -110,6 +136,14 @@ const mockProducts = [
     image_url:
       'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=700&q=75',
     is_available: true,
+    notes: {
+      salida: 'Neroli y bergamota.',
+      corazon: 'Jazmín sambac, tuberosa y ylang-ylang.',
+      fondo: 'Vainilla, benjuí y almizcle.',
+    },
+    description:
+      'Floral blanco intenso y sensual que se abre con cítricos y termina en ' +
+      'un fondo cálido de vainilla. Una fragancia de noche con mucha personalidad.',
   },
   {
     id: 'p-005',
@@ -121,6 +155,14 @@ const mockProducts = [
     image_url:
       'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=700&q=75',
     is_available: true,
+    notes: {
+      salida: 'Limón siciliano y menta.',
+      corazon: 'Lavanda, geranio y vetiver.',
+      fondo: 'Musgo de roble y ámbar gris.',
+    },
+    description:
+      'Fresco y aromático al inicio, con un vetiver terroso que aporta ' +
+      'carácter. Versátil para el trabajo y para después del gimnasio.',
   },
   {
     id: 'p-006',
@@ -132,6 +174,14 @@ const mockProducts = [
     image_url:
       'https://images.unsplash.com/photo-1608528577891-eb055944f2e7?auto=format&fit=crop&w=700&q=75',
     is_available: true,
+    notes: {
+      salida: 'Cítricos luminosos y pera.',
+      corazon: 'Rosa, jazmín y peonía.',
+      fondo: 'Almizcle y vainilla suave.',
+    },
+    description:
+      'Dos fragancias de 50 ml en un estuche listo para regalar: una floral ' +
+      'fresca para el día y otra más cálida para la noche.',
   },
   {
     id: 'p-007',
@@ -143,6 +193,14 @@ const mockProducts = [
     image_url:
       'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=700&q=75',
     is_available: false,
+    notes: {
+      salida: 'Bergamota y cardamomo.',
+      corazon: 'Cuero, iris y vetiver.',
+      fondo: 'Sándalo, ámbar y haba tonka.',
+    },
+    description:
+      'Set de dos colonias amaderadas y especiadas para el hombre que quiere ' +
+      'alternar entre una fragancia de oficina y una de noche.',
   },
   {
     id: 'p-008',
@@ -154,6 +212,14 @@ const mockProducts = [
     image_url:
       'https://images.unsplash.com/photo-1610461888750-10bfc601b874?auto=format&fit=crop&w=700&q=75',
     is_available: true,
+    notes: {
+      salida: 'Mandarina y pimienta negra.',
+      corazon: 'Ámbar, incienso y lavanda.',
+      fondo: 'Vainilla, pachulí y maderas.',
+    },
+    description:
+      'Oriental cálido con un toque de incienso y maderas: un aroma con ' +
+      'carácter que funciona igual para él o para ella.',
   },
 ];
 
@@ -273,7 +339,25 @@ function getFilteredProducts() {
 /* 6. Renderizado del catálogo público ------------------------------------ */
 
 /**
- * HTML de una tarjeta de producto.
+ * Construye el enlace de WhatsApp para un producto con el mensaje ya escrito.
+ * Se usa en el modal de reseña (y quedaría lista para cualquier otro CTA).
+ * @param {object} product
+ * @returns {string}
+ */
+function whatsappUrl(product) {
+  const message = encodeURIComponent(
+    `¡Hola Emeraldparfum! Quiero pedir *${product.name}* de ${product.brand} ` +
+      `(${product.category} · ${volumeLabel(product)}) — ${formatPrice(product.price)}. ` +
+      `¿Está disponible?`
+  );
+  return CONFIG.whatsappNumber
+    ? `https://wa.me/${CONFIG.whatsappNumber}?text=${message}`
+    : `https://wa.me/?text=${message}`;
+}
+
+/**
+ * HTML de una tarjeta de producto (versión compacta para 2 columnas en móvil).
+ * La tarjeta completa es clicable y abre el modal de reseña.
  * @param {object} product
  * @param {number} [index] posición en la rejilla, para escalonar la animación
  * @returns {string}
@@ -284,27 +368,6 @@ function productCardTemplate(product, index = 0) {
   const categoryBadge = CATEGORY_BADGE[product.category] ?? '';
   // Máximo 240 ms de cascada: se nota el efecto sin retrasar la lectura.
   const animationDelay = Math.min(index, 8) * 40;
-
-  // Mensaje preformateado para WhatsApp, con la marca del negocio.
-  const message = encodeURIComponent(
-    `¡Hola Emeraldparfum! Me interesa *${product.name}* de ${product.brand} ` +
-      `(${product.category} · ${volume}) — ${formatPrice(product.price)}. ` +
-      `¿Está disponible?`
-  );
-  const waHref = CONFIG.whatsappNumber
-    ? `https://wa.me/${CONFIG.whatsappNumber}?text=${message}`
-    : `https://wa.me/?text=${message}`;
-
-  const whatsappButton = available
-    ? `<a href="${waHref}" target="_blank" rel="noopener noreferrer"
-          class="btn btn-primary mt-auto w-full"
-          aria-label="Encargar ${escapeHtml(product.name)} por WhatsApp">
-         Encargar por WhatsApp
-       </a>`
-    : `<button type="button" class="btn btn-secondary mt-auto w-full" disabled
-          aria-label="${escapeHtml(product.name)} agotado">
-         Agotado
-       </button>`;
 
   return `
     <article class="card fade-in-up" data-id="${escapeHtml(product.id)}"
@@ -322,13 +385,17 @@ function productCardTemplate(product, index = 0) {
       </div>
 
       <div class="card-body">
-        <p class="text-xs uppercase tracking-wide text-text-light">
-          ${escapeHtml(product.brand)}
-        </p>
+        <p class="card-brand">${escapeHtml(product.brand)}</p>
         <h3 class="card-title">${escapeHtml(product.name)}</h3>
-        <p class="text-sm text-text-light">${escapeHtml(volume)}</p>
+        <p class="card-volume">${escapeHtml(volume)}</p>
         <p class="price mt-1">${formatPrice(product.price)}</p>
-        ${whatsappButton}
+
+        <!-- Área táctil accesible: abre la reseña ampliada -->
+        <button type="button" class="btn btn-secondary card-action mt-auto w-full"
+                data-action="open-detail" data-id="${escapeHtml(product.id)}"
+                aria-label="Ver reseña de ${escapeHtml(product.name)}">
+          Ver reseña
+        </button>
       </div>
     </article>
   `;
@@ -482,7 +549,165 @@ function resetFilters() {
   dom.searchInput?.focus();
 }
 
-/* 8. Carrusel de marca y ocasiones (hero) --------------------------------
+/* 8. Modal de reseña (vista ampliada) ------------------------------------
+   Se construye una sola vez y se rellena con el producto elegido. Mantiene
+   el foco atrapado, cierra con Escape/backdrop/✕ y devuelve el foco a la
+   tarjeta de origen. */
+
+let detailModal = null;
+let lastDetailTrigger = null;
+
+/** Abre la reseña ampliada de un producto. */
+function openProductDetail(productId) {
+  const product = mockProducts.find((p) => p.id === productId);
+  if (!product) return;
+
+  if (!detailModal) {
+    detailModal = buildDetailModal();
+    document.body.appendChild(detailModal);
+  }
+
+  lastDetailTrigger = document.activeElement;
+
+  const content = detailModal.querySelector('#detailContent');
+  content.innerHTML = detailTemplate(product);
+
+  // Mismo fallback de imagen que usa el catálogo.
+  content.querySelectorAll('img[data-fallback]').forEach((img) => {
+    img.addEventListener(
+      'error',
+      () => {
+        img.src = PLACEHOLDER_IMAGE;
+        img.removeAttribute('data-fallback');
+      },
+      { once: true }
+    );
+  });
+
+  detailModal.hidden = false;
+  detailModal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  detailModal.querySelector('[data-action="close-detail"]')?.focus();
+}
+
+/** Cierra el modal y devuelve el foco al elemento que lo abrió. */
+function closeProductDetail() {
+  if (!detailModal || detailModal.hidden) return;
+  detailModal.hidden = true;
+  detailModal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  lastDetailTrigger?.focus?.();
+  lastDetailTrigger = null;
+}
+
+/** Estructura fija del modal (se crea una vez). */
+function buildDetailModal() {
+  const overlay = document.createElement('div');
+  overlay.id = 'productDetail';
+  overlay.className = 'detail-overlay';
+  overlay.hidden = true;
+  overlay.setAttribute('aria-hidden', 'true');
+
+  overlay.innerHTML = `
+    <div class="detail-dialog" role="dialog" aria-modal="true"
+         aria-labelledby="detailTitle" tabindex="-1">
+      <button type="button" class="detail-close" data-action="close-detail"
+              aria-label="Cerrar reseña">✕</button>
+      <div id="detailContent" class="detail-grid"></div>
+    </div>
+  `;
+
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay || event.target.closest('[data-action="close-detail"]')) {
+      closeProductDetail();
+    }
+  });
+
+  overlay.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeProductDetail();
+      return;
+    }
+    trapFocus(event);
+  });
+
+  return overlay;
+}
+
+/**
+ * Contenido del modal para un producto: foto grande, datos, notas y CTA.
+ * @param {object} product
+ * @returns {string}
+ */
+function detailTemplate(product) {
+  const available = Boolean(product.is_available);
+  const badge = CATEGORY_BADGE[product.category] ?? '';
+  const notes = product.notes ?? {};
+
+  const noteRows = [
+    ['Salida', notes.salida],
+    ['Corazón', notes.corazon],
+    ['Fondo', notes.fondo],
+  ]
+    .filter(([, value]) => Boolean(value))
+    .map(
+      ([label, value]) => `
+        <div class="detail-note">
+          <dt>${label}</dt>
+          <dd>${escapeHtml(value)}</dd>
+        </div>`
+    )
+    .join('');
+
+  const cta = available
+    ? `<a class="btn btn-primary detail-cta" href="${whatsappUrl(product)}"
+          target="_blank" rel="noopener noreferrer">
+         Pedir por WhatsApp
+       </a>`
+    : `<button type="button" class="btn btn-secondary detail-cta" disabled>
+         Agotado por el momento
+       </button>`;
+
+  return `
+    <div class="detail-media">
+      <img src="${escapeHtml(product.image_url || PLACEHOLDER_IMAGE)}"
+           alt="Frasco de ${escapeHtml(product.name)} de ${escapeHtml(product.brand)}"
+           decoding="async" data-fallback="true">
+      <span class="badge ${badge} detail-media__badge">
+        ${escapeHtml(product.category)}
+      </span>
+    </div>
+
+    <div class="detail-body">
+      <p class="detail-brand">${escapeHtml(product.brand)}</p>
+      <h2 id="detailTitle" class="detail-title">${escapeHtml(product.name)}</h2>
+
+      <div class="detail-meta">
+        <span class="price">${formatPrice(product.price)}</span>
+        <span class="detail-volume">${escapeHtml(volumeLabel(product))}</span>
+        <span class="badge badge-status ${available ? '' : 'badge-status--out'}">
+          ${available ? 'Disponible' : 'Agotado'}
+        </span>
+      </div>
+
+      <p class="detail-description">${escapeHtml(product.description ?? '')}</p>
+
+      ${
+        noteRows
+          ? `<div class="detail-notes">
+               <h3 class="detail-notes__title">Reseña · Notas olfativas</h3>
+               <dl>${noteRows}</dl>
+             </div>`
+          : ''
+      }
+
+      ${cta}
+    </div>
+  `;
+}
+
+/* 9. Carrusel de marca y ocasiones (hero) --------------------------------
    Arranca en el Slide 1 (logo local) y a los 5 s pasa a las escenas de
    ocasiones. Rotación automática con pausa accesible: se detiene al pasar el
    ratón, al enfocar un control, al ocultar la pestaña, con el botón ⏸ y
@@ -650,7 +875,7 @@ function initHeroCarousel() {
   startAutoPlay();
 }
 
-/* 9. Panel de administración ---------------------------------------------
+/* 10. Panel de administración --------------------------------------------
    Todo se construye una sola vez y se reutiliza. El panel muestra:
    - Resumen del inventario (total y disponibles).
    - Formulario de alta que inserta en `mockProducts` al instante.
@@ -821,19 +1046,14 @@ function buildAdminPanel() {
 }
 
 /**
- * Manejo de teclado dentro del panel: Escape cierra y Tab queda atrapado
- * entre los controles del diálogo (foco accesible).
+ * Atrapa el foco dentro de un diálogo modal (Tab / Shift+Tab) para que la
+ * navegación por teclado no se escape al fondo de la página.
  */
-function handlePanelKeydown(event) {
-  if (event.key === 'Escape') {
-    event.preventDefault();
-    closeAdminPanel();
-    return;
-  }
-
+function trapFocus(event) {
   if (event.key !== 'Tab') return;
 
-  const focusables = event.currentTarget.querySelectorAll(
+  const container = event.currentTarget;
+  const focusables = container.querySelectorAll(
     'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
   );
   if (focusables.length === 0) return;
@@ -848,6 +1068,19 @@ function handlePanelKeydown(event) {
     event.preventDefault();
     first.focus();
   }
+}
+
+/**
+ * Manejo de teclado dentro del panel de administración: Escape cierra y Tab
+ * queda atrapado entre los controles del diálogo (foco accesible).
+ */
+function handlePanelKeydown(event) {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeAdminPanel();
+    return;
+  }
+  trapFocus(event);
 }
 
 /** Pinta la tabla de inventario y el resumen superior. */
@@ -1003,7 +1236,7 @@ function setAdminFeedback(text) {
   if (feedback) feedback.textContent = text;
 }
 
-/* 10. Eventos globales ---------------------------------------------------- */
+/* 11. Eventos globales ---------------------------------------------------- */
 
 function bindEvents() {
   // --- Abrir panel admin desde el footer ---
@@ -1044,13 +1277,21 @@ function bindEvents() {
     setBrandFilter(chip.dataset.brand);
   });
 
-  // --- Acciones dentro de la rejilla (botón del estado vacío) ---
+  // --- Acciones dentro de la rejilla ---
   dom.productsGrid?.addEventListener('click', (event) => {
-    if (event.target.closest('[data-action="clear-filters"]')) resetFilters();
+    // Botón del estado vacío: limpia todos los filtros.
+    if (event.target.closest('[data-action="clear-filters"]')) {
+      resetFilters();
+      return;
+    }
+
+    // Toda la tarjeta (o su botón "Ver reseña") abre el detalle ampliado.
+    const card = event.target.closest('.card[data-id]');
+    if (card) openProductDetail(card.dataset.id);
   });
 }
 
-/* 11. Arranque ---------------------------------------------------------- */
+/* 12. Arranque ---------------------------------------------------------- */
 
 function init() {
   if (dom.currentYear) {
