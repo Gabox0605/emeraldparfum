@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Emeraldparfum · Catálogo de colonias y perfumes para damas, caballeros y unisex, además de estuches de regalo. Encuentra tu aroma ideal.">
+  <meta name="theme-color" content="#10b981">
+  <title>Emeraldparfum · Catálogo de Colonias</title>
+
+  <!-- Favicon: monograma "E" sobre esmeralda, sin archivos externos -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2310b981'/%3E%3Ctext x='50' y='54' font-family='Georgia,serif' font-size='62' fill='white' text-anchor='middle' dominant-baseline='middle'%3EE%3C/text%3E%3C/svg%3E">
+
+  <!-- Tipografías: Inter (cuerpo) y Playfair Display (títulos) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Logo del primer slide: se precarga porque es el LCP del hero -->
+  <link rel="preload" as="image" href="./assets/logo.jpg">
+
+  <!-- Tailwind CSS vía CDN (solo prototipo: no incluye purge ni JIT de build) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Configuración de Tailwind: expone la paleta de marca como utilidades
+       (bg-primary, text-secondary, etc.) para no repetir valores hex en el HTML.
+       Debe ir DESPUÉS del CDN de Tailwind y ANTES de style.css. -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#ec4899',
+            'primary-hover': '#db2777',
+            'primary-light': '#f9a8d4',
+            secondary: '#8b5cf6',
+            tertiary: '#fdf2f8',
+            'text-dark': '#f9fafb',
+            'text-light': '#9ca3af',
+            'bg-dark': '#090d16',
+            panel: '#111827'
+          },
+          fontFamily: {
+            sans: ["'Inter'", 'system-ui', 'sans-serif'],
+            brand: ["'Playfair Display'", 'serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Estilos propios: variables CSS, base y componentes -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Cliente de Supabase v2 (CDN). Expone el global `supabase` -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+  <!-- Enlace de salto: primer elemento enfocable para usuarios de teclado -->
+  <a href="#catalogo"
+     class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-[var(--color-panel)] focus:px-4 focus:py-2 focus:text-[var(--color-text-dark)] focus:shadow-md">
+    Saltar al catálogo
+  </a>
+
+  <!-- ======================================================================
+       HEADER
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container-page flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+      <!-- Marca -->
+      <a href="./" class="flex items-center gap-3 no-underline"
+         aria-label="Emeraldparfum, ir al inicio del catálogo">
+        <span aria-hidden="true" class="brand-mark">E</span>
+        <span class="flex flex-col leading-tight">
+          <span class="font-brand text-2xl text-text-dark">Emeraldparfum</span>
+          <span class="text-sm text-text-light">Fragancias que dejan huella</span>
+        </span>
+      </a>
+
+      <!-- Redes + búsqueda -->
+      <div class="flex w-full items-center gap-2 sm:w-auto sm:gap-4">
+
+        <!-- Instagram oficial -->
+        <a class="social-link" href="https://instagram.com/emeraldparf"
+           target="_blank" rel="noopener noreferrer"
+           aria-label="Instagram de Emeraldparfum, usuario @emeraldparf">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" aria-hidden="true" class="h-5 w-5">
+            <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+            <circle cx="12" cy="12" r="4"></circle>
+            <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"></circle>
+          </svg>
+          <span class="hidden md:inline">@emeraldparf</span>
+        </a>
+
+        <!-- Barra de búsqueda -->
+        <div class="flex-1 sm:w-72 sm:flex-none">
+          <label for="searchInput" class="sr-only">Buscar colonia por nombre o marca</label>
+          <div class="relative">
+            <!-- Icono decorativo: el input ya tiene label accesible -->
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-light">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m20 20-3.5-3.5"></path>
+            </svg>
+            <input
+              id="searchInput"
+              type="search"
+              name="q"
+              placeholder="Buscar por nombre o marca…"
+              autocomplete="off"
+              class="input-field pl-10"
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       MAIN
+       ====================================================================== -->
+  <main class="flex-1">
+
+    <!-- Título principal de la página. Va oculto para lectores de pantalla
+         porque el header ya muestra la marca: mantiene un único h1 y deja
+         que los títulos del carrusel sean h2. -->
+    <h1 class="sr-only">Emeraldparfum — fragancias para cada ocasión</h1>
+
+    <!-- ====================================================================
+         HERO CARRUSEL
+         Slide 1: logo de marca (imagen local, sin texto superpuesto).
+         Slides 2-4: ocasiones de uso. Rotación automática cada 5 s desde
+         app.js; los controles permiten avanzar, retroceder y pausar, y el
+         carrusel se pausa al pasar el ratón o al enfocar un control.
+         ==================================================================== -->
+    <section id="heroBanner" class="hero-carousel"
+             aria-roledescription="carrusel"
+             aria-label="Emeraldparfum: marca y ocasiones para lucir tu fragancia">
+
+      <div class="hero-carousel__viewport">
+
+        <!-- Slide 1 · Marca · logo local (assets/logo.jpg) -->
+        <article id="slide1" class="hero-slide hero-slide--brand is-active"
+                 data-slide="0" data-label="Emeraldparfum"
+                 aria-hidden="false"
+                 style="--slide-image: url('./assets/logo.jpg')">
+          <!-- El texto ya está dentro de la imagen; se ofrece equivalente a
+               lectores de pantalla y un título accesible para la sección. -->
+          <h2 class="sr-only">Emeraldparfum — Esencias de Costa Rica</h2>
+          <div class="hero-slide__overlay" aria-hidden="true"></div>
+        </article>
+
+        <!-- Slide 2 · Cita / Cena romántica · brindis con vino -->
+        <article class="hero-slide" data-slide="1" data-label="Cita romántica"
+                 aria-hidden="true" inert>
+          <img class="hero-slide__img"
+               src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=1600&auto=format&fit=crop"
+               alt="" loading="lazy" decoding="async">
+          <div class="hero-slide__overlay" aria-hidden="true"></div>
+          <div class="hero-slide__content container-page">
+            <p class="hero-slide__brand">Emeraldparfum</p>
+            <p class="hero-slide__eyebrow">Cita · Cena romántica</p>
+            <h2 class="hero-slide__title">Intensidad y Seducción</h2>
+            <p class="hero-slide__text">
+              Emeraldparfum para momentos inolvidables en pareja.
+            </p>
+            <a href="#catalogo" class="btn btn-primary hero-slide__cta">Explorar el catálogo</a>
+          </div>
+        </article>
+
+        <!-- Slide 3 · Reunión de negocios · apretón de manos -->
+        <article class="hero-slide" data-slide="2" data-label="Negocios"
+                 aria-hidden="true" inert>
+          <img class="hero-slide__img"
+               src="https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=1600&auto=format&fit=crop"
+               alt="" loading="lazy" decoding="async">
+          <div class="hero-slide__overlay" aria-hidden="true"></div>
+          <div class="hero-slide__content container-page">
+            <p class="hero-slide__brand">Emeraldparfum</p>
+            <p class="hero-slide__eyebrow">Reunión de negocios</p>
+            <h2 class="hero-slide__title">Presencia y Elegancia</h2>
+            <p class="hero-slide__text">
+              Proyecta confianza y profesionalismo en cada acuerdo.
+            </p>
+            <a href="#catalogo" class="btn btn-primary hero-slide__cta">
+              Explorar el catálogo
+            </a>
+          </div>
+        </article>
+
+        <!-- Slide 4 · Día de playa / Casual · amigos junto al mar -->
+        <article class="hero-slide" data-slide="3" data-label="Playa"
+                 aria-hidden="true" inert>
+          <img class="hero-slide__img"
+               src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=1600&auto=format&fit=crop"
+               alt="" loading="lazy" decoding="async">
+          <div class="hero-slide__overlay" aria-hidden="true"></div>
+          <div class="hero-slide__content container-page">
+            <p class="hero-slide__brand">Emeraldparfum</p>
+            <p class="hero-slide__eyebrow">Día de playa · Casual</p>
+            <h2 class="hero-slide__title">Frescura y Libertad</h2>
+            <p class="hero-slide__text">
+              Notas cítricas y marinas para días radiantes al aire libre.
+            </p>
+            <a href="#catalogo" class="btn btn-primary hero-slide__cta">
+              Explorar el catálogo
+            </a>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- Controles del carrusel -->
+      <div class="hero-carousel__controls container-page">
+        <!-- Los puntos se generan desde app.js a partir de los slides -->
+        <div class="hero-carousel__dots" role="group" aria-label="Ir a una diapositiva"></div>
+
+        <div class="hero-carousel__buttons">
+          <button type="button" class="hero-btn" data-carousel="prev"
+                  aria-label="Diapositiva anterior">‹</button>
+          <button type="button" class="hero-btn" data-carousel="pause"
+                  aria-label="Pausar carrusel" aria-pressed="false">⏸</button>
+          <button type="button" class="hero-btn" data-carousel="next"
+                  aria-label="Diapositiva siguiente">›</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         MARCAS DESTACADAS
+         Chips de cristal que filtran el catálogo por casa de perfumería.
+         En móvil se deslizan horizontalmente; en escritorio se envuelven.
+         ==================================================================== -->
+    <section class="brands-section container-page" aria-labelledby="brandsTitle">
+
+      <h2 id="brandsTitle" class="brands-section__title font-brand">
+        Encuentra tus Casas de Perfumería Favoritas
+      </h2>
+
+      <div id="brandFilters" class="brand-row"
+           role="group" aria-label="Filtrar por casa de perfumería">
+        <button type="button" class="brand-chip is-active" data-brand="all"
+                aria-pressed="true">Todas</button>
+        <button type="button" class="brand-chip" data-brand="Carolina Herrera"
+                aria-pressed="false">Carolina Herrera</button>
+        <button type="button" class="brand-chip" data-brand="Chanel"
+                aria-pressed="false">Chanel</button>
+        <button type="button" class="brand-chip" data-brand="Dior"
+                aria-pressed="false">Dior</button>
+        <button type="button" class="brand-chip" data-brand="Paco Rabanne"
+                aria-pressed="false">Paco Rabanne</button>
+        <button type="button" class="brand-chip" data-brand="Versace"
+                aria-pressed="false">Versace</button>
+        <button type="button" class="brand-chip" data-brand="Hugo Boss"
+                aria-pressed="false">Hugo Boss</button>
+        <button type="button" class="brand-chip" data-brand="Victoria's Secret"
+                aria-pressed="false">Victoria's Secret</button>
+        <button type="button" class="brand-chip" data-brand="Dolce &amp; Gabbana"
+                aria-pressed="false">Dolce &amp; Gabbana</button>
+      </div>
+    </section>
+
+    <!-- Presentación breve del catálogo -->
+    <section class="container-page pt-8 pb-2 text-center sm:pt-12">
+      <h2 class="text-3xl">La colección Emeraldparfum</h2>
+      <p class="mx-auto mt-2 max-w-2xl text-text-light">
+        Perfumes originales para damas, caballeros y unisex, además de estuches
+        de regalo. Explora por categoría o busca por nombre y marca.
+      </p>
+    </section>
+
+    <!-- Catálogo -->
+    <section id="catalogo" class="container-page py-6" aria-labelledby="catalogo-titulo">
+
+      <h2 id="catalogo-titulo" class="section-title mb-4">Productos</h2>
+
+      <!-- Filtros por categoría: los botones son generados/actualizados por app.js.
+           data-category se usa como valor interno y no como texto visible. -->
+      <nav id="categoryFilters"
+           class="mb-5 flex flex-wrap gap-2"
+           aria-label="Filtrar por categoría">
+        <button type="button" class="btn btn-primary" data-category="Todos" aria-pressed="true">Todos</button>
+        <button type="button" class="btn btn-secondary" data-category="Damas" aria-pressed="false">Damas</button>
+        <button type="button" class="btn btn-secondary" data-category="Caballeros" aria-pressed="false">Caballeros</button>
+        <button type="button" class="btn btn-secondary" data-category="Unisex" aria-pressed="false">Unisex</button>
+        <button type="button" class="btn btn-secondary" data-category="Estuches" aria-pressed="false">Estuches</button>
+      </nav>
+
+      <!-- Contador de resultados; app.js lo actualiza tras cada carga o filtro -->
+      <p id="resultsCount" class="mb-4 text-sm text-text-light" role="status" aria-live="polite">
+        Cargando productos…
+      </p>
+
+      <!-- Zona de mensajes: errores de conexión con Supabase -->
+      <div id="errorMessage" class="mb-4 hidden" role="alert"></div>
+
+      <!-- Rejilla de productos.
+           En modo carga contiene skeletons con la misma proporción que las
+           tarjetas reales para evitar saltos de layout (CLS). -->
+      <div id="productsGrid"
+           class="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+           aria-busy="true">
+
+        <!-- Skeleton de ejemplo (se elimina al primer render de app.js) -->
+        <article class="card" aria-hidden="true">
+          <div class="skeleton aspect-square"></div>
+          <div class="card-body">
+            <div class="skeleton h-4 w-3/4"></div>
+            <div class="skeleton h-3 w-1/2"></div>
+            <div class="skeleton mt-2 h-5 w-1/3"></div>
+          </div>
+        </article>
+        <article class="card" aria-hidden="true">
+          <div class="skeleton aspect-square"></div>
+          <div class="card-body">
+            <div class="skeleton h-4 w-3/4"></div>
+            <div class="skeleton h-3 w-1/2"></div>
+            <div class="skeleton mt-2 h-5 w-1/3"></div>
+          </div>
+        </article>
+        <article class="card" aria-hidden="true">
+          <div class="skeleton aspect-square"></div>
+          <div class="card-body">
+            <div class="skeleton h-4 w-3/4"></div>
+            <div class="skeleton h-3 w-1/2"></div>
+            <div class="skeleton mt-2 h-5 w-1/3"></div>
+          </div>
+        </article>
+        <article class="card" aria-hidden="true">
+          <div class="skeleton aspect-square"></div>
+          <div class="card-body">
+            <div class="skeleton h-4 w-3/4"></div>
+            <div class="skeleton h-3 w-1/2"></div>
+            <div class="skeleton mt-2 h-5 w-1/3"></div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Estado vacío: lo genera app.js dentro de #productsGrid
+           (col-span-full) para quedar centrado en la propia rejilla. -->
+    </section>
+  </main>
+
+  <!-- ======================================================================
+       FOOTER
+       ====================================================================== -->
+  <footer class="site-footer">
+    <div class="container-page flex flex-col items-center gap-3 py-6 text-center sm:flex-row sm:flex-wrap sm:justify-between sm:text-left">
+
+      <p class="text-sm text-text-light">
+        &copy; <span id="currentYear">2026</span> Emeraldparfum. Todos los derechos reservados.
+      </p>
+
+      <p class="text-sm text-text-light">
+        Hecho con <span class="text-primary" aria-hidden="true">♥</span>
+        <span class="sr-only">amor</span> para amantes de las fragancias.
+      </p>
+
+      <!-- Instagram oficial (visible también en el footer) -->
+      <a class="social-link" href="https://instagram.com/emeraldparf"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="Instagram de Emeraldparfum, usuario @emeraldparf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" aria-hidden="true" class="h-5 w-5">
+          <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+          <circle cx="12" cy="12" r="4"></circle>
+          <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"></circle>
+        </svg>
+        <span>@emeraldparf</span>
+      </a>
+
+      <!-- Acceso discreto al simulador de administración (sin autenticación real) -->
+      <button type="button" id="adminToggle" class="admin-link"
+              aria-haspopup="dialog"
+              title="Abrir panel de administración (Ctrl + Shift + A)">
+        Panel Admin <span aria-hidden="true">⚙️</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Fallback para navegadores sin JavaScript -->
+  <noscript>
+    <div class="alert-error container-page my-4">
+      Este catálogo necesita JavaScript activado para mostrar los productos.
+    </div>
+  </noscript>
+
+  <!-- Lógica de la aplicación: módulo ES6 (requiere servidor local, ver README) -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
